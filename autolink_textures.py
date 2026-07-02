@@ -94,13 +94,16 @@ SLOT_CONFIG = {
 
 TEXTURE_EXTS = (".png", ".tga", ".tif", ".tiff", ".jpg", ".jpeg", ".exr", ".psd", ".bmp")
 
-UDIM_RE = re.compile(r"[\._](\d{4})$")  # trailing .1001 or _1001 on the stem
+# Trailing .1001 or _1001 on the stem. Restricted to 1xxx (UDIM tiles start at
+# 1001) so resolution suffixes like _2048 / _4096 are not mistaken for tiles.
+UDIM_RE = re.compile(r"[\._](1\d{3})$")
 
 
 def find_map_token(stem):
-    """Return ('single'|'packed', value, position) for the LAST alias in the stem.
+    """Return ('single'|'packed', value) for the LAST alias in the stem,
+    or (None, None) if no alias is found.
 
-    Position matters so 'Robot_Arm_BaseColor' resolves to BaseColor (later token)
+    The last match wins so 'Robot_Arm_BaseColor' resolves to BaseColor
     and not the ARM packed alias.
     """
     tokens = re.split(r"[_\.\-\s]+", stem.lower())
@@ -146,14 +149,15 @@ def collect_textures(folder):
 
 
 def best_material_for(stem, materials):
-    """Longest material name that appears in the filename stem wins."""
-    best = None
-    for mat in materials:
-        n = mat.name.lower()
-        if n and n in stem:
-            if best is None or len(n) > len(best.name):
-                best = mat
-    return best
+    """Longest material name that appears in the filename stem wins.
+
+    `materials` is a list of (lowercase_name, material) pairs.
+    """
+    best_name, best_mat = "", None
+    for name, mat in materials:
+        if name in stem and len(name) > len(best_name):
+            best_name, best_mat = name, mat
+    return best_mat
 
 
 def make_texture(path, is_srgb, tiles):
@@ -173,10 +177,10 @@ def make_texture(path, is_srgb, tiles):
                 except Exception:
                     pass
         else:
-            print("  ! UDIM set (%d tiles) linked as tile %s only — if the other"
-                  % (tiles, os.path.basename(path)))
-            print("    tiles don't show, enable UDIM on the texture manually and"
-                  " report the setting name.")
+            print("  ! UDIM set of %d tiles, but no UDIM switch found on the"
+                  " texture — only %s was linked." % (tiles, os.path.basename(path)))
+            print("    If the other tiles don't show, enable UDIM on the texture"
+                  " manually and report the setting name.")
     return tex
 
 
@@ -214,18 +218,19 @@ def main():
         print("No folder selected — aborted.")
         return
 
-    materials = [m for m in mset.getAllMaterials() if m.name]
+    materials = [(m.name.lower(), m) for m in mset.getAllMaterials() if m.name]
     textures = collect_textures(folder)
     if not textures:
         print("No recognizable texture files in: %s" % folder)
         return
 
-    linked, skipped = 0, []
+    linked, skipped, matched_mats = 0, [], set()
     for path, stem, kind, value, tiles in textures:
         mat = best_material_for(stem, materials)
         if mat is None:
             skipped.append(os.path.basename(path))
             continue
+        matched_mats.add(mat.name)
         tag = " (UDIM x%d)" % tiles if tiles > 1 else ""
         if kind == "single":
             print("%s  ->  %s [%s]%s" % (os.path.basename(path), mat.name, value, tag))
@@ -239,7 +244,7 @@ def main():
                     linked += 1
 
     print("-" * 50)
-    print("Linked %d map slot(s) across %d material(s)." % (linked, len(materials)))
+    print("Linked %d map slot(s) across %d material(s)." % (linked, len(matched_mats)))
     if skipped:
         print("Skipped (no matching material name):")
         for s in skipped:
