@@ -13,9 +13,21 @@ Works with typical Substance 3D Painter exports out of the box.
 
 ## Install
 
-1. In Toolbag, go to **Edit → Plugins → Show User Plugin Folder**.
-2. Copy `autolink_textures.py` into that folder (you can rename it, e.g. `AutoLink Textures.py` — the filename becomes the menu entry).
-3. **Edit → Plugins → Refresh**.
+**1. Get the script.** Download `autolink_textures.py` from this repo (green **Code** button → **Download ZIP**, or grab it from the [latest release](https://github.com/atikarnz/marmoset-autolink/releases)).
+
+**2. Find your Toolbag plugin folder.** The easy way: open Toolbag and go to **Edit → Plugins → Show User Plugin Folder** — it opens the right folder for you.
+
+If you prefer to navigate there yourself, the default location on Windows is:
+
+```
+C:\Users\<your username>\AppData\Local\Marmoset Toolbag 5\plugins
+```
+
+(For Toolbag 4, replace `Toolbag 5` with `Toolbag 4`.) The `AppData` folder is hidden by default — the quickest way in is to paste `%LOCALAPPDATA%\Marmoset Toolbag 5\plugins` into the File Explorer address bar and press Enter.
+
+**3. Copy the file into that folder.** The filename becomes the menu entry, so you may want to rename it to something friendly like `AutoLink Textures.py`.
+
+**4. Load it in Toolbag.** Go to **Edit → Plugins → Refresh**. The script now appears in the **Edit → Plugins** menu, ready to run. No restart needed.
 
 ## Usage
 
