@@ -1,3 +1,5 @@
+![Marmoset AutoLink — unofficial auto texture-linker for Marmoset Toolbag 4/5](docs/banner.png)
+
 # AutoLink Textures — for Marmoset Toolbag 4 / 5
 
 One-click texture assignment for Marmoset Toolbag. Pick a folder, and the script matches every texture file to the scene's materials by name, plugs each map into the correct material slot, and sets sRGB, normal-map flipping, and packed-map channels for you.
